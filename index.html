@@ -38,6 +38,17 @@
 
   <div id="appBody" style="display:none;">
 
+  <!-- Admin (visible only to admin accounts) -->
+  <section class="card" id="adminCard" style="display:none;">
+    <h2 data-i18n="adminTitle">Admin: all agents</h2>
+    <div class="table-wrap">
+      <table id="adminTable">
+        <thead><tr><th data-i18n="adminEmail">Agent</th><th class="num" data-i18n="adminRecs">Records</th><th class="num" data-i18n="adminValue">Monthly total</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
   <!-- Dashboard -->
   <section class="card" id="dashCard">
     <h2 data-i18n="dashboard">Dashboard</h2>
@@ -60,7 +71,7 @@
       <label for="amountInput" data-i18n="fAmount">Monthly amount (Rs.)</label>
       <input id="amountInput" type="number" min="0" step="any" inputmode="decimal" required>
       <label for="dateInput" data-i18n="fDate">Opening date</label>
-      <input id="dateInput" type="date" required>
+      <input id="dateInput" type="date">
       <label for="notesInput" data-i18n="fNotes">Notes (optional)</label>
       <input id="notesInput" type="text">
       <button class="btn btn-primary" type="submit" id="saveBtn" data-i18n="saveBtn">Add record</button>
