@@ -666,6 +666,7 @@ async function init() {
     sb.auth.onAuthStateChange(function (ev, s) {
       if (session && s && session.user.id === s.user.id && ev === "TOKEN_REFRESHED") { session=s; return; }
       session=s; cache=[]; cloudReady=false; adminOpen={};
+      $("passInput").value=""; $("authMsg").textContent=""; $("addMsg").textContent="";
       $("adminTable").querySelector("tbody").textContent="";
       $("resultsWrap").style.display="none";
       resetForm(); refreshViews(); updateAuthUI();
