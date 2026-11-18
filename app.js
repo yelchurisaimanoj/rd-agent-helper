@@ -12,10 +12,10 @@ searchHint:"Enter the short alias numbers shown next to each record. One or many
 totalAmount:"Total amount", waBtn:"Send reference numbers on WhatsApp", waHint:"The WhatsApp message contains only the comma-separated reference numbers.",
 allTitle:"All records", filterPh:"Search by name or reference", allEmpty:"No records yet. Add your first RD account above.",
 expJson:"Export backup (JSON)", expCsv:"Export CSV", impBackup:"Import backup",
-privacyHint:"Your data stays on this device only (browser storage). Export a backup regularly - clearing browser data erases the records.",
+privacyHint:"Cloud mode: records are stored in the private account database. Device-only mode: records stay in this browser. Keep exports private.",
 dopTitle:"India Post agent portal", dopHint:"Open the official DOP agent portal, or import a report (CSV) you downloaded from it.",
 dopOpen:"Open DOP agent portal", dopImport:"Import portal CSV",
-footer:"Open source - MIT License. Works offline. Data never leaves your device.",
+footer:"Open source - MIT License. Independent tool, not affiliated with India Post. Cloud records need internet.",
 cAlias:"Alias", cName:"Name", cRef:"Reference", cAmount:"Amount", cDate:"Opening date", cStatus:"Status",
 paid:"Paid", unpaid:"Pending", edit:"Edit", del:"Delete",
 dAccounts:"Total accounts", dMonthly:"Total monthly RD value", dCollMonth:"Collected this month", dPendMonth:"Pending this month",
@@ -33,10 +33,10 @@ searchHint:"हर रिकॉर्ड के सामने दिखने 
 totalAmount:"कुल राशि", waBtn:"WhatsApp पर रेफरेंस नंबर भेजें", waHint:"WhatsApp संदेश में केवल कॉमा से अलग रेफरेंस नंबर होंगे।",
 allTitle:"सभी रिकॉर्ड", filterPh:"नाम या रेफरेंस से खोजें", allEmpty:"अभी कोई रिकॉर्ड नहीं। ऊपर पहला खाता जोड़ें।",
 expJson:"बैकअप निर्यात (JSON)", expCsv:"CSV निर्यात", impBackup:"बैकअप आयात",
-privacyHint:"आपका डेटा केवल इसी डिवाइस पर रहता है। नियमित बैकअप लें - ब्राउज़र डेटा साफ करने से रिकॉर्ड मिट जाएंगे।",
+privacyHint:"Cloud mode: records are stored in the private account database. Device-only mode: records stay in this browser. Keep exports private.",
 dopTitle:"इंडिया पोस्ट एजेंट पोर्टल", dopHint:"आधिकारिक DOP एजेंट पोर्टल खोलें, या वहां से डाउनलोड की गई रिपोर्ट (CSV) आयात करें।",
 dopOpen:"DOP एजेंट पोर्टल खोलें", dopImport:"पोर्टल CSV आयात करें",
-footer:"ओपन सोर्स - MIT लाइसेंस। ऑफ़लाइन काम करता है। डेटा आपका डिवाइस नहीं छोड़ता।",
+footer:"Open source - MIT License. Independent tool, not affiliated with India Post. Cloud records need internet.",
 cAlias:"उपनाम", cName:"नाम", cRef:"रेफरेंस", cAmount:"राशि", cDate:"खुलने की तारीख", cStatus:"स्थिति",
 paid:"जमा", unpaid:"बाकी", edit:"बदलें", del:"हटाएं",
 dAccounts:"कुल खाते", dMonthly:"कुल मासिक आरडी राशि", dCollMonth:"इस माह जमा", dPendMonth:"इस माह बाकी",
@@ -54,10 +54,10 @@ searchHint:"ప్రతి రికార్డ్ పక్కన ఉన్�
 totalAmount:"మొత్తం", waBtn:"WhatsApp లో రిఫరెన్స్ నంబర్లు పంపండి", waHint:"WhatsApp సందేశంలో కామాతో వేరు చేసిన రిఫరెన్స్ నంబర్లు మాత్రమే ఉంటాయి.",
 allTitle:"అన్ని రికార్డులు", filterPh:"పేరు లేదా రిఫరెన్స్‌తో వెతకండి", allEmpty:"ఇంకా రికార్డులు లేవు. పైన మీ మొదటి ఖాతా జోడించండి.",
 expJson:"బ్యాకప్ ఎగుమతి (JSON)", expCsv:"CSV ఎగుమతి", impBackup:"బ్యాకప్ దిగుమతి",
-privacyHint:"మీ డేటా ఈ పరికరంలోనే ఉంటుంది. క్రమం తప్పకుండా బ్యాకప్ తీయండి - బ్రౌజర్ డేటా తుడిస్తే రికార్డులు పోతాయి.",
+privacyHint:"Cloud mode: records are stored in the private account database. Device-only mode: records stay in this browser. Keep exports private.",
 dopTitle:"ఇండియా పోస్ట్ ఏజెంట్ పోర్టల్", dopHint:"అధికారిక DOP ఏజెంట్ పోర్టల్ తెరవండి, లేదా అక్కడి నుండి డౌన్‌లోడ్ చేసిన నివేదిక (CSV) దిగుమతి చేయండి.",
 dopOpen:"DOP ఏజెంట్ పోర్టల్ తెరవండి", dopImport:"పోర్టల్ CSV దిగుమతి",
-footer:"ఓపెన్ సోర్స్ - MIT లైసెన్స్. ఆఫ్‌లైన్‌లో పనిచేస్తుంది. డేటా మీ పరికరాన్ని వదలదు.",
+footer:"Open source - MIT License. Independent tool, not affiliated with India Post. Cloud records need internet.",
 cAlias:"మారుపేరు", cName:"పేరు", cRef:"రిఫరెన్స్", cAmount:"మొత్తం", cDate:"తెరిచిన తేదీ", cStatus:"స్థితి",
 paid:"చెల్లించారు", unpaid:"బాకీ", edit:"మార్చండి", del:"తొలగించండి",
 dAccounts:"మొత్తం ఖాతాలు", dMonthly:"మొత్తం నెలవారీ ఆర్డీ విలువ", dCollMonth:"ఈ నెల వసూలు", dPendMonth:"ఈ నెల బాకీ",
@@ -72,8 +72,8 @@ recs:" రికార్డులు.", matured:"మెచ్యూర్ అ�
 Object.assign(I18N.en, {
   loginTitle:"Agent login", fEmail:"Email", fPass:"Password", signIn:"Sign in", signUp:"Create account", signOut:"Sign out",
   signedInAs:"Signed in as ", authBad:"Login failed. Check email and password.", authDone:"Account created. If asked, confirm the email, then sign in.",
-  impTitle:"Import data file", impHint:"Load your existing client list from a CSV or Excel file (including a report downloaded from the DOP agent portal). Match the columns, check the preview, then import.",
-  impPick:"Choose CSV / Excel file", impMap:"Match each file column to a field:", impPreview:"Preview (first 5 rows):", impRun:"Import rows",
+  impTitle:"Import data file", impHint:"Load your existing client list from a JSON, CSV or Excel file (including a report downloaded from the DOP agent portal). Match the columns, check the preview, then import.",
+  impPick:"Choose JSON / CSV / Excel file", impMap:"Match each file column to a field:", impPreview:"Preview (first 5 rows):", impRun:"Import rows",
   fSkip:"Skip", fPhoneF:"Phone", impNone:"No file rows found.", impNeedRef:"Map at least the Reference or Name column.",
   impDone:" rows imported.", impDup:" duplicate reference(s) skipped.", impBadFile:"Could not read that file.",
   syncOff:"Offline - changes are saved on this device and will sync when you are back online.",
@@ -278,7 +278,7 @@ addForm.addEventListener("submit", async function (e) {
       date = $("dateInput").value, notes = $("notesInput").value.trim();
   if (!name) return showMsg(addMsg, t("errName"), false);
   if (!ref) return showMsg(addMsg, t("errRef"), false);
-  if (!isFinite(amount) || amount < 0) return showMsg(addMsg, t("errAmt"), false);
+  if (!isFinite(amount) || amount <= 0 || Math.round(amount * 100) !== amount * 100) return showMsg(addMsg, t("errAmt"), false);
 
   var records = loadRecords(), editing = editAlias.value;
   if (records.some(function (r) { return r.ref === ref && String(r.alias) !== editing; }))
@@ -372,12 +372,12 @@ function renderSched(mk) {
     pill.className = "pill " + (paid ? "paid" : "unpaid");
     pill.textContent = paid ? t("paid") : t("unpaid");
     pill.style.cursor = "pointer";
-    pill.addEventListener("click", function () {
+    pill.addEventListener("click", async function () {
       var all = loadRecords();
       all.forEach(function (x) {
         if (x.alias === r.alias) { x.paid = x.paid || {}; if (x.paid[mk]) delete x.paid[mk]; else x.paid[mk] = true; }
       });
-      saveRecords(all); renderSched(mk); renderDash();
+      if (await saveRecords(all)) { renderSched(mk); renderDash(); }
     });
     tdS.appendChild(pill);
     tr.append(tdA, tdN, tdR, tdM, tdS);
@@ -392,7 +392,8 @@ function renderSched(mk) {
 $("searchBtn").addEventListener("click", function () {
   var raw = $("searchInput").value.trim(), records = loadRecords();
   if (!raw) { $("resultsWrap").style.display = "none"; return; }
-  var wanted = raw.split(",").map(function (s) { return parseInt(s.trim(), 10); }).filter(isFinite);
+  if (!/^\s*[1-9]\d*\s*(,\s*[1-9]\d*\s*)*$/.test(raw)) { alert("Enter positive alias numbers separated by commas only."); return; }
+  var wanted = Array.from(new Set(raw.split(",").map(function (s) { return Number(s.trim()); })));
   var found = records.filter(function (r) { return wanted.indexOf(r.alias) !== -1; })
     .sort(function (a, b) { return a.alias - b.alias; });
   var missing = wanted.filter(function (n) { return !records.some(function (r) { return r.alias === n; }); });
@@ -450,9 +451,9 @@ function renderAll() {
     var be = document.createElement("button"); be.className = "btn btn-small"; be.type = "button"; be.textContent = t("edit");
     be.addEventListener("click", function () { startEdit(r); });
     var bd = document.createElement("button"); bd.className = "btn btn-small btn-danger"; bd.type = "button"; bd.textContent = t("del");
-    bd.addEventListener("click", function () {
+    bd.addEventListener("click", async function () {
       if (!confirm(t("delConfirm") + " #" + r.alias)) return;
-      saveRecords(loadRecords().filter(function (x) { return x.alias !== r.alias; }));
+      await saveRecords(loadRecords().filter(function (x) { return x.alias !== r.alias; }));
       refreshViews();
     });
     wrap.append(be, bd); tdA.appendChild(wrap); tr.appendChild(tdA);
