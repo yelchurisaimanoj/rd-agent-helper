@@ -77,7 +77,8 @@ Object.assign(I18N.en, {
   fSkip:"Skip", fPhoneF:"Phone", impNone:"No file rows found.", impNeedRef:"Map at least the Reference or Name column.",
   impDone:" rows imported.", impDup:" duplicate reference(s) skipped.", impBadFile:"Could not read that file.",
   syncOff:"Offline - changes are saved on this device and will sync when you are back online.",
-  syncOk:"Synced with your account.", colFile:"File column", colField:"Field", fAlias:"Alias number (Sno)", fNeedsPay:"Needs-to-pay flag"
+  syncOk:"Synced with your account.", colFile:"File column", colField:"Field", fAlias:"Alias number (Sno)", fNeedsPay:"Needs-to-pay flag",
+  adminTitle:"Admin: all agents", adminEmail:"Agent", adminRecs:"Records", adminValue:"Monthly total", adminView:"View", adminHide:"Hide", adminNone:"No agents yet."
 });
 
 var lang = localStorage.getItem(LANG_KEY) || "en";
@@ -100,6 +101,7 @@ document.querySelectorAll(".lang-bar button").forEach(function (b) {
     if (lastSched) renderSched(lastSched);
   });
 });
+function escapeHtml(v) { var el=document.createElement("span"); el.textContent=String(v); return el.innerHTML; }
 function fmtAmount(a) { return Number(a || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 }); }
 function fmtDate(iso) {
   if (!iso) return "";
@@ -130,10 +132,7 @@ function localLoad() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch (e) { return []; }
 }
 function localSave(r) { localStorage.setItem(STORE_KEY, JSON.stringify(r)); }
-function cloudEnabled() {
-  return typeof RD_CONFIG !== "undefined" && RD_CONFIG.SUPABASE_URL && RD_CONFIG.SUPABASE_ANON_KEY &&
-    typeof window.supabase !== "undefined";
-}
+function cloudEnabled() { return typeof RD_CONFIG !== "undefined" && RD_CONFIG.SUPABASE_URL && RD_CONFIG.SUPABASE_ANON_KEY; }
 
 var sb = null, session = null, cache = [], syncDirty = false;
 
@@ -143,42 +142,112 @@ function normalize(r) {
     date: r.date ? String(r.date).slice(0, 10) : "", notes: String(r.notes || ""),
     paid: (r.paid && typeof r.paid === "object") ? r.paid : {} };
 }
-function loadRecords() { return cache.slice(); }
+function loadRecords() { return JSON.parse(JSON.stringify(cache)); }
 function nextAlias() {
   return cache.reduce(function (m, r) { return Math.max(m, r.alias || 0); }, 0) + 1;
 }
-function saveRecords(records) {
-  cache = records.map(normalize);
-  localSave(cache);
-  if (sb && session) pushCloud();
-}
-function setSyncNote(kind) {
-  var el = $("syncNote");
-  if (!kind) { el.style.display = "none"; return; }
-  el.style.display = "block";
-  el.textContent = kind === "off" ? t("syncOff") : t("syncOk");
+var cloudReady = false, saving = false;
+function setSyncNote(message) {
+  $("syncNote").style.display = message ? "block" : "none";
+  $("syncNote").textContent = message || "";
 }
 async function loadCloud() {
-  var res = await sb.from("records").select("*").order("alias");
-  if (res.error) { cache = localLoad(); setSyncNote("off"); return; }
-  cache = res.data.map(normalize);
-  localSave(cache);
-  setSyncNote("");
+  cloudReady = false;
+  var res = await sb.from("records").select("*").eq("user_id", session.user.id).order("alias");
+  if (res.error) { cache = []; setSyncNote("Cannot load records. Check your connection and reload. Editing is disabled."); return; }
+  cache = res.data.map(normalize); cloudReady = true;
+  setSyncNote("Connected. Cloud records require an internet connection. No client records are saved in this browser.");
 }
-async function pushCloud() {
-  var rows = cache.map(function (r) {
-    return { user_id: session.user.id, alias: r.alias, name: r.name, phone: r.phone,
-      ref: r.ref, amount: r.amount, date: r.date || null, notes: r.notes, paid: r.paid };
+async function saveRecords(records) {
+  if (!sb) { cache = records.map(normalize); localSave(cache); return true; }
+  if (!session || !cloudReady || saving || !navigator.onLine) {
+    alert("Not saved. Wait for the current save or reconnect, then try again."); return false;
+  }
+  saving = true;
+  var before = loadRecords(), next = records.map(normalize), uid = session.user.id;
+  setSyncNote("Saving...");
+  try {
+    var changed = next.filter(function(r) { var old=before.find(function(x){return x.alias===r.alias;}); return !old || JSON.stringify(old)!==JSON.stringify(r); });
+    var inserted = changed.filter(function(r){return !before.some(function(x){return x.alias===r.alias;});});
+    var updated = changed.filter(function(r){return before.some(function(x){return x.alias===r.alias;});});
+    function row(r){return {user_id:uid,alias:r.alias,name:r.name,phone:r.phone,ref:r.ref,amount:r.amount,date:r.date||null,notes:r.notes,paid:r.paid};}
+    if (inserted.length) { var ins=await sb.from("records").insert(inserted.map(row)); if(ins.error) throw ins.error; }
+    for (var r of updated) { var up=await sb.from("records").update(row(r)).eq("user_id",uid).eq("alias",r.alias); if(up.error) throw up.error; }
+    var removed=before.filter(function(r){return !next.some(function(x){return x.alias===r.alias;});});
+    for(var r of removed){var del=await sb.from("records").delete().eq("user_id",uid).eq("alias",r.alias); if(del.error) throw del.error;}
+    await loadCloud(); refreshViews(); return true;
+  } catch(e) { alert("Save failed. Reloading server records. Check the record before trying again. " + (e.message||"")); await loadCloud(); refreshViews(); return false; }
+  finally {saving=false;}
+}
+
+// --- Admin panel ---
+var isAdmin = false;
+async function loadRole() {
+  isAdmin = false;
+  if (!sb || !session) return;
+  var res = await sb.from("profiles").select("role").eq("user_id", session.user.id).maybeSingle();
+  isAdmin = !!(res.data && res.data.role === "admin");
+  $("adminCard").style.display = isAdmin ? "block" : "none";
+  if (isAdmin) renderAdmin();
+}
+var adminOpen = {};
+async function renderAdmin() {
+  var card = $("adminCard");
+  var pr = await sb.from("profiles").select("user_id,email").order("created_at");
+  var rr = await sb.from("records").select("user_id,alias,name,ref,amount,date").order("alias");
+  var tb = $("adminTable").querySelector("tbody");
+  tb.innerHTML = "";
+  if (pr.error || !pr.data || !pr.data.length) {
+    tb.innerHTML = "<tr><td colspan=4 class='empty'>" + t("adminNone") + "</td></tr>";
+    return;
+  }
+  var byUser = {};
+  (rr.data || []).forEach(function (r) {
+    (byUser[r.user_id] = byUser[r.user_id] || []).push(r);
   });
-  var up = await sb.from("records").upsert(rows, { onConflict: "user_id,alias" });
-  var del = { error: null };
-  var aliases = cache.map(function (r) { return r.alias; });
-  if (aliases.length) del = await sb.from("records").delete().not("alias", "in", "(" + aliases.join(",") + ")");
-  else del = await sb.from("records").delete().gte("alias", 0);
-  if (up.error || del.error) { syncDirty = true; setSyncNote("off"); }
-  else { syncDirty = false; setSyncNote("ok"); await loadCloud(); refreshViews(); }
+  pr.data.forEach(function (p) {
+    var recs = byUser[p.user_id] || [];
+    var total = recs.reduce(function (s, r) { return s + Number(r.amount || 0); }, 0);
+    var tr = document.createElement("tr");
+    var td1 = document.createElement("td"); td1.textContent = p.email || p.user_id;
+    var td2 = document.createElement("td"); td2.className = "num"; td2.textContent = recs.length;
+    var td3 = document.createElement("td"); td3.className = "num"; td3.textContent = "Rs. " + fmtAmount(total);
+    var td4 = document.createElement("td");
+    var btn = document.createElement("button");
+    btn.className = "btn btn-small"; btn.type = "button";
+    btn.textContent = adminOpen[p.user_id] ? t("adminHide") : t("adminView");
+    btn.addEventListener("click", function () {
+      adminOpen[p.user_id] = !adminOpen[p.user_id];
+      renderAdmin();
+    });
+    td4.appendChild(btn);
+    tr.append(td1, td2, td3, td4);
+    tb.appendChild(tr);
+    if (adminOpen[p.user_id]) {
+      var trd = document.createElement("tr");
+      var tdd = document.createElement("td");
+      tdd.colSpan = 4;
+      var inner = document.createElement("table");
+      inner.innerHTML = "<thead><tr><th>" + t("cAlias") + "</th><th>" + t("cName") + "</th><th>" + t("cRef") + "</th><th class='num'>" + t("cAmount") + "</th><th>" + t("cDate") + "</th></tr></thead>";
+      var ib = document.createElement("tbody");
+      recs.forEach(function (r) {
+        var ir = document.createElement("tr");
+        [r.alias, r.name || "", r.ref || "", fmtAmount(r.amount), fmtDate(r.date)].forEach(function (v, i) {
+          var c = document.createElement("td");
+          c.textContent = v;
+          if (i === 3) c.className = "num";
+          ir.appendChild(c);
+        });
+        ib.appendChild(ir);
+      });
+      if (!recs.length) ib.innerHTML = "<tr><td colspan=5 class='empty'>-</td></tr>";
+      inner.appendChild(ib);
+      tdd.appendChild(inner);
+      trd.appendChild(tdd);
+      tb.appendChild(trd);
+    }
+  });
 }
-window.addEventListener("online", function () { if (sb && session && syncDirty) pushCloud(); });
 
 // --- Auth UI ---
 function updateAuthUI() {
@@ -202,7 +271,7 @@ async function doAuth(kind) {
 
 // --- Add / edit form ---
 var addForm = $("addForm"), addMsg = $("addMsg"), editAlias = $("editAlias");
-addForm.addEventListener("submit", function (e) {
+addForm.addEventListener("submit", async function (e) {
   e.preventDefault();
   var name = $("nameInput").value.trim(), phone = $("phoneInput").value.trim(),
       ref = $("refInput").value.trim(), amount = parseFloat($("amountInput").value),
@@ -210,7 +279,7 @@ addForm.addEventListener("submit", function (e) {
   if (!name) return showMsg(addMsg, t("errName"), false);
   if (!ref) return showMsg(addMsg, t("errRef"), false);
   if (!isFinite(amount) || amount < 0) return showMsg(addMsg, t("errAmt"), false);
-  if (!date) return showMsg(addMsg, t("errDate"), false);
+
   var records = loadRecords(), editing = editAlias.value;
   if (records.some(function (r) { return r.ref === ref && String(r.alias) !== editing; }))
     return showMsg(addMsg, t("errDup"), false);
@@ -218,11 +287,11 @@ addForm.addEventListener("submit", function (e) {
     records.forEach(function (r) {
       if (String(r.alias) === editing) { r.name = name; r.phone = phone; r.ref = ref; r.amount = amount; r.date = date; r.notes = notes; }
     });
-    saveRecords(records); showMsg(addMsg, t("updated"), true); resetForm();
+    if (!(await saveRecords(records))) return; showMsg(addMsg, t("updated"), true); resetForm();
   } else {
     var alias = nextAlias();
     records.push({ alias: alias, name: name, phone: phone, ref: ref, amount: amount, date: date, notes: notes, paid: {} });
-    saveRecords(records); showMsg(addMsg, t("savedAs") + alias + ".", true);
+    if (!(await saveRecords(records))) return; showMsg(addMsg, t("savedAs") + alias + ".", true);
     addForm.reset(); $("nameInput").focus();
   }
   refreshViews();
@@ -271,7 +340,7 @@ function renderDash() {
   }).join("");
   $("maturityNotice").innerHTML = mats.length
     ? "<div class='notice'>" + mats.map(function (r) {
-        return "#" + r.alias + " " + (r.name || r.ref) + " - " + t("maturesOn") + " " + fmtDate(isoLocal(maturityOf(r)));
+        return "#" + r.alias + " " + escapeHtml(r.name || r.ref) + " - " + t("maturesOn") + " " + fmtDate(isoLocal(maturityOf(r)));
       }).join("<br>") + "</div>"
     : "";
 }
@@ -542,7 +611,7 @@ function buildWizard() {
   });
   pt.setAttribute("data-start", dataStart);
 }
-$("impRunBtn").addEventListener("click", function () {
+$("impRunBtn").addEventListener("click", async function () {
   var map = {};
   document.querySelectorAll("#impMapTable select").forEach(function (sel) {
     if (sel.value) map[sel.value] = parseInt(sel.getAttribute("data-col"), 10);
@@ -579,7 +648,7 @@ $("impRunBtn").addEventListener("click", function () {
       notes: map.notes !== undefined ? String(row[map.notes] || "").trim() : "", paid: paid });
     added++;
   });
-  saveRecords(records); refreshViews();
+  if (!(await saveRecords(records))) return; refreshViews();
   showMsg(msg, added + t("impDone") + (dup ? dup + t("impDup") : ""), added > 0);
   $("impWizard").style.display = added ? "none" : "block";
 });
@@ -588,18 +657,23 @@ $("impRunBtn").addEventListener("click", function () {
 async function init() {
   applyLang();
   if (cloudEnabled()) {
+    if(!window.supabase){ document.body.textContent="Login could not load. Check your connection and reload."; return; }
     sb = window.supabase.createClient(RD_CONFIG.SUPABASE_URL, RD_CONFIG.SUPABASE_ANON_KEY);
     $("signInBtn").addEventListener("click", function () { doAuth("in"); });
     $("signUpBtn").addEventListener("click", function () { doAuth("up"); });
     $("signOutBtn").addEventListener("click", async function () { await sb.auth.signOut(); });
-    sb.auth.onAuthStateChange(async function (ev, s) {
-      session = s;
-      if (session) { cache = localLoad(); refreshViews(); updateAuthUI(); await loadCloud(); refreshViews(); }
-      else updateAuthUI();
+    sb.auth.onAuthStateChange(function (ev, s) {
+      if (session && s && session.user.id === s.user.id && ev === "TOKEN_REFRESHED") { session=s; return; }
+      session=s; cache=[]; cloudReady=false; adminOpen={};
+      $("adminTable").querySelector("tbody").textContent="";
+      $("resultsWrap").style.display="none";
+      resetForm(); refreshViews(); updateAuthUI();
+      if(s) setTimeout(async function(){ await loadCloud(); await loadRole(); refreshViews(); },0);
+      else {isAdmin=false; $("adminCard").style.display="none";}
     });
     var s = await sb.auth.getSession();
     session = s.data.session;
-    if (session) { cache = localLoad(); refreshViews(); await loadCloud(); }
+    if (session) { cache = []; await loadCloud(); await loadRole(); }
   } else {
     cache = localLoad();
   }
