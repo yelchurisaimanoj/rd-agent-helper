@@ -1,38 +1,38 @@
-# Setup and publish guide
+# Setup and publishing
 
-Two parts: (A) the free backend on Supabase, (B) publishing the site on GitHub Pages. About 20 minutes total. No cost.
+This repository contains code only. Never commit client files, exports, passwords, or secret API keys. Setup time varies. Supabase and GitHub free plans have their own provider limits.
 
-## A. Backend (Supabase free tier)
+## Backend
 
-1. Go to https://supabase.com and sign up (free, can use your GitHub account).
-2. Click **New project**. Pick any name, set a strong database password (save it), region closest to you (e.g. Mumbai / Singapore). Free plan is fine.
-3. When the project is ready, open **SQL Editor** (left menu) > **New query**. Paste the whole contents of `supabase/schema.sql` from this repo and click **Run**. You should see "Success".
-4. Open **Authentication** > **Providers**. Make sure **Email** is enabled (it is by default). For testing you may disable "Confirm email" under Email settings; for real use keep it enabled.
-5. Open **Project Settings** > **API**. Copy:
-   - **Project URL**
-   - **anon public** key (NOT the service_role key - that one stays secret and is never used here)
-6. In your copy of this repo, copy `config.example.js` to `config.js` and paste those two values in.
+1. Create a Supabase project on its free plan, or use your existing project.
+2. Run `supabase/schema.sql` in its SQL Editor. It installs records, profiles, row-level security, and a signup trigger. The schema is transactional.
+3. Keep email confirmation enabled for real users. Create users through the app, or use Authentication > Users > Add user in the trusted dashboard. Ordinary users receive the agent role.
+4. Set `SUPABASE_URL` and `SUPABASE_ANON_KEY` in `config.js` to that project's URL and publishable key. Only a publishable/anon key belongs here. Never use a secret/service-role key in the site.
+5. Set Authentication > URL Configuration to your deployed website URL, with its trailing slash. Add the same URL to allowed redirects.
 
-Security: the anon key is safe to publish in the website because row-level security (set up by schema.sql) means every logged-in agent can only read and write their own rows. Nobody can see another agent's data.
+## Publishing
 
-## B. Publish the site (GitHub Pages)
+Publish the code repository with GitHub Pages using the main branch, root folder. The site requires no build step. Wait for the Pages deployment to finish successfully and open the resulting website. Check that login and cloud saves work before importing private data.
 
-1. Sign in to https://github.com and click **New repository**. Name it e.g. `rd-agent-helper`. Choose **Public** (needed for free Pages). Create it.
-2. Upload the files: on the repo page click **Add file > Upload files**, then drag in ALL files from this folder: `index.html`, `app.js`, `styles.css`, `sw.js`, `config.js` (the one you just filled in), `README.md`, `LICENSE`, `SETUP.md`, and the `supabase` folder. Commit.
-3. Go to **Settings > Pages**. Under "Build and deployment" choose **Deploy from a branch**, branch `main`, folder `/ (root)`. Save.
-4. Wait 1-2 minutes. Your site is live at `https://<your-username>.github.io/rd-agent-helper/`.
-5. In Supabase, open **Authentication > URL Configuration** and add that site URL under **Site URL** / redirect URLs so login emails point back to your site.
+## Super admin
 
-## C. First use
+Create the intended owner's account first. In the trusted Supabase SQL Editor, review the exact email and then run:
 
-1. Open your site. Create an agent account with email + password (Sign up).
-2. Load your existing client list - two private options:
-   - **In the app (easiest)**: sign in, open **Import data file**, choose your JSON/CSV/Excel file. The wizard auto-matches columns (Sno -> alias, Ref -> reference, Name, Amount; IsNeedTOpay is ignored), shows a preview, then imports. The file never leaves your device except into your own Supabase project.
-   - **One-time seed script**: run `supabase/seed.js` on your own computer (see the header comment in that file for the exact command). It signs in as you and upserts all records with Sno as the alias.
+```sql
+update public.profiles set role = 'admin'
+where user_id = (select id from auth.users where email = 'replace-with-owner-email');
+```
 
-**Privacy: never commit or upload your data file to GitHub.** Only the code goes in the repo. If the file is ever inside the repo folder, delete it before committing (or add its name to a `.gitignore`).
-3. Every agent who uses the site signs up with their own email - each sees only their own records.
+Sign out and back in. Admins can view agent lists and records. Ordinary agents can only access their own records. Profile role changes and account administration require the trusted dashboard; the browser app cannot grant roles. Treat admin access as access to all records in this project.
 
-## D. Updating the site later
+## Private import
 
-Edit files in the GitHub repo (or upload replacements) - Pages redeploys automatically within a minute.
+Sign in as the intended record owner. Use Import data file with a JSON, CSV or Excel file. Review the column mapping and preview. Preserve Sno as Alias; map Ref, Name and Amount. Ignore IsNeedTOpay unless you deliberately choose otherwise. Missing opening dates remain blank. Import saves records to that signed-in account's database, not to GitHub. Exported backups contain private client information and must be kept private.
+
+Before using real records, create two temporary test agents, save synthetic data with one and check the other cannot read it. Check signed-out reads too. Remove test accounts afterward.
+
+## Storage and backups
+
+Cloud mode is online-only. Client records are not cached in browser localStorage; login sessions remain until sign-out. Use trusted devices and sign out after use. The service worker caches only the app shell. Device-only mode without a configured backend has no login protection and stores data in the browser. It is not appropriate for shared devices.
+
+Keep regular private exports and verify recovery in a separate test environment. Monthly payment status is agent-entered tracking, not official India Post confirmation. Portal API access and automation terms have not been verified. The WhatsApp share button is not a chatbot.
