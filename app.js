@@ -278,7 +278,7 @@ addForm.addEventListener("submit", async function (e) {
       date = $("dateInput").value, notes = $("notesInput").value.trim();
   if (!name) return showMsg(addMsg, t("errName"), false);
   if (!ref) return showMsg(addMsg, t("errRef"), false);
-  if (!isFinite(amount) || amount <= 0 || Math.round(amount * 100) !== amount * 100) return showMsg(addMsg, t("errAmt"), false);
+  if (!isFinite(amount) || amount <= 0 || Math.abs(Math.round(amount * 100) - amount * 100) > 0.000001) return showMsg(addMsg, t("errAmt"), false);
 
   var records = loadRecords(), editing = editAlias.value;
   if (records.some(function (r) { return r.ref === ref && String(r.alias) !== editing; }))
