@@ -1,3 +1,4 @@
+begin;
 -- RD Agent Helper - Supabase schema
 -- Run this once in your Supabase project: SQL Editor > New query > paste > Run.
 
@@ -61,11 +62,21 @@ create policy "profiles read" on public.profiles
   for select using (auth.uid() = user_id or public.is_admin());
 
 drop policy if exists "profiles insert own" on public.profiles;
-create policy "profiles insert own" on public.profiles
-  for insert with check (auth.uid() = user_id);
+-- Profiles are created only by the signup trigger. Browser roles cannot insert,
+-- update or delete profiles, so they cannot grant themselves admin.
+revoke insert, update, delete on public.profiles from anon, authenticated;
+grant select on public.profiles to authenticated;
 
 -- NOTE: roles can only be changed with the service role (SQL Editor), never
 -- from the app. To make someone an admin, sign them up in the app first, then
 -- run in the SQL Editor:
 --   update public.profiles set role = 'admin'
 --   where user_id = (select id from auth.users where email = 'their@email');
+
+revoke all on public.records from anon;
+grant select, insert, update, delete on public.records to authenticated;
+revoke all on public.profiles from anon;
+grant select on public.profiles to authenticated;
+revoke all on function public.is_admin() from public;
+grant execute on function public.is_admin() to authenticated;
+commit;
