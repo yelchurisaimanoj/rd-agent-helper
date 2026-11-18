@@ -265,7 +265,10 @@ async function doAuth(kind) {
   var res = kind === "up"
     ? await sb.auth.signUp({ email: email, password: pass })
     : await sb.auth.signInWithPassword({ email: email, password: pass });
-  if (res.error) showMsg($("authMsg"), t("authBad"), false);
+  if (res.error) {
+    var msg = res.error.code === "email_not_confirmed" ? "Confirm your email first: open the confirmation email, follow its link, then return here and sign in. Check Spam too." : res.error.status === 429 ? "Too many attempts. Please wait before trying again." : t("authBad");
+    showMsg($("authMsg"), msg, false);
+  }
   else if (kind === "up" && !res.data.session) showMsg($("authMsg"), t("authDone"), true);
 }
 
