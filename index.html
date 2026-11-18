@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RD Agent Helper</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1 data-i18n="appTitle">RD Agent Helper</h1>
+    <p data-i18n="tagline">For India Post RD agents - track client RD accounts, prepare schedules, share on WhatsApp.</p>
+    <div class="lang-bar">
+      <button type="button" data-lang="en" class="active">English</button>
+      <button type="button" data-lang="hi">हिंदी</button>
+      <button type="button" data-lang="te">తెలుగు</button>
+    </div>
+  </header>
+
+  <!-- Login (only shown when cloud backend is configured) -->
+  <section class="card" id="authCard" style="display:none;">
+    <h2 data-i18n="loginTitle">Agent login</h2>
+    <div id="authForm">
+      <label for="emailInput" data-i18n="fEmail">Email</label>
+      <input id="emailInput" type="email" autocomplete="email">
+      <label for="passInput" data-i18n="fPass">Password</label>
+      <input id="passInput" type="password" autocomplete="current-password">
+      <button class="btn btn-primary" id="signInBtn" type="button" data-i18n="signIn">Sign in</button>
+      <button class="btn btn-small" id="signUpBtn" type="button" style="width:100%;margin-top:8px" data-i18n="signUp">Create account</button>
+      <div class="msg" id="authMsg"></div>
+    </div>
+    <div id="authStatus" style="display:none;">
+      <p id="authWho" class="hint"></p>
+      <button class="btn btn-small" id="signOutBtn" type="button" data-i18n="signOut">Sign out</button>
+    </div>
+  </section>
+
+  <div id="appBody" style="display:none;">
+
+  <!-- Dashboard -->
+  <section class="card" id="dashCard">
+    <h2 data-i18n="dashboard">Dashboard</h2>
+    <div class="table-wrap"><table id="dashTable"><tbody></tbody></table></div>
+    <div id="maturityNotice"></div>
+    <p class="hint" id="syncNote" style="display:none;"></p>
+  </section>
+
+  <!-- Add / edit record -->
+  <section class="card" id="addCard">
+    <h2 id="addTitle" data-i18n="addTitle">Add RD account</h2>
+    <form id="addForm" autocomplete="off">
+      <input type="hidden" id="editAlias" value="">
+      <label for="nameInput" data-i18n="fName">Client name</label>
+      <input id="nameInput" type="text" required>
+      <label for="phoneInput" data-i18n="fPhone">Client phone (optional)</label>
+      <input id="phoneInput" type="tel" inputmode="tel">
+      <label for="refInput" data-i18n="fRef">Reference / account number</label>
+      <input id="refInput" type="text" required>
+      <label for="amountInput" data-i18n="fAmount">Monthly amount (Rs.)</label>
+      <input id="amountInput" type="number" min="0" step="any" inputmode="decimal" required>
+      <label for="dateInput" data-i18n="fDate">Opening date</label>
+      <input id="dateInput" type="date" required>
+      <label for="notesInput" data-i18n="fNotes">Notes (optional)</label>
+      <input id="notesInput" type="text">
+      <button class="btn btn-primary" type="submit" id="saveBtn" data-i18n="saveBtn">Add record</button>
+      <button class="btn btn-small" type="button" id="cancelEditBtn" style="display:none;width:100%;margin-top:8px" data-i18n="cancelEdit">Cancel edit</button>
+      <div class="msg" id="addMsg"></div>
+    </form>
+  </section>
+
+  <!-- Monthly schedule -->
+  <section class="card">
+    <h2 data-i18n="schedTitle">Monthly schedule</h2>
+    <label for="schedMonth" data-i18n="schedMonth">Month</label>
+    <input id="schedMonth" type="month">
+    <button class="btn btn-primary" id="schedBtn" type="button" data-i18n="schedShow">Show schedule</button>
+    <div id="schedWrap" style="display:none;">
+      <div class="table-wrap">
+        <table id="schedTable">
+          <thead><tr>
+            <th data-i18n="cAlias">Alias</th><th data-i18n="cName">Name</th>
+            <th data-i18n="cRef">Reference</th><th class="num" data-i18n="cAmount">Amount</th>
+            <th data-i18n="cStatus">Status</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="total-row"><span data-i18n="schedCollected">Collected</span><span id="schedCollected">Rs. 0</span></div>
+      <div class="total-row"><span data-i18n="schedPending">Pending</span><span id="schedPending">Rs. 0</span></div>
+    </div>
+  </section>
+
+  <!-- Alias search -->
+  <section class="card">
+    <h2 data-i18n="searchTitle">Search by alias numbers</h2>
+    <label for="searchInput" data-i18n="searchLabel">Alias numbers (comma separated)</label>
+    <input id="searchInput" type="text" placeholder="1,2,5">
+    <p class="hint" data-i18n="searchHint">Enter the short alias numbers shown next to each record. One or many, separated by commas.</p>
+    <button class="btn btn-primary" id="searchBtn" type="button" data-i18n="searchBtn">Search</button>
+    <div id="resultsWrap" style="display:none;">
+      <div class="table-wrap">
+        <table id="resultsTable">
+          <thead><tr>
+            <th data-i18n="cAlias">Alias</th><th data-i18n="cName">Name</th>
+            <th data-i18n="cRef">Reference</th><th class="num" data-i18n="cAmount">Amount</th>
+            <th data-i18n="cDate">Opening date</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="total-row"><span data-i18n="totalAmount">Total amount</span><span id="totalAmount">Rs. 0</span></div>
+      <a class="btn btn-wa" id="waBtn" href="#" target="_blank" rel="noopener" data-i18n="waBtn">Send reference numbers on WhatsApp</a>
+      <p class="hint" data-i18n="waHint">The WhatsApp message contains only the comma-separated reference numbers.</p>
+      <div class="msg" id="searchMsg"></div>
+    </div>
+  </section>
+
+  <!-- All records -->
+  <section class="card">
+    <h2><span data-i18n="allTitle">All records</span> <span class="badge" id="countBadge">0</span></h2>
+    <input id="filterInput" type="search" data-i18n-ph="filterPh" placeholder="Search by name or reference">
+    <div class="table-wrap">
+      <table id="allTable">
+        <thead><tr>
+          <th data-i18n="cAlias">Alias</th><th data-i18n="cName">Name</th>
+          <th data-i18n="cRef">Reference</th><th class="num" data-i18n="cAmount">Amount</th>
+          <th data-i18n="cDate">Opening date</th><th></th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="empty" id="allEmpty" data-i18n="allEmpty">No records yet. Add your first RD account above.</p>
+    <div class="toolbar">
+      <button class="btn btn-small" id="exportJsonBtn" type="button" data-i18n="expJson">Export backup (JSON)</button>
+      <button class="btn btn-small" id="exportCsvBtn" type="button" data-i18n="expCsv">Export CSV</button>
+    </div>
+    <p class="hint" data-i18n="privacyHint">Records are stored securely in your own account. Export a backup regularly.</p>
+  </section>
+
+  <!-- Import data file -->
+  <section class="card">
+    <h2 data-i18n="impTitle">Import data file</h2>
+    <p class="hint" data-i18n="impHint">Load your existing client list from a CSV or Excel file (including a report downloaded from the DOP agent portal). You can match columns before importing.</p>
+    <div class="toolbar">
+      <button class="btn btn-small" id="pickFileBtn" type="button" data-i18n="impPick">Choose CSV / Excel file</button>
+      <input type="file" id="impFile" accept=".csv,.xlsx,.xls,.json,text/csv,application/json" style="display:none">
+      <a class="btn btn-small" href="https://dopagent.indiapost.gov.in/" target="_blank" rel="noopener" data-i18n="dopOpen">Open DOP agent portal</a>
+    </div>
+    <div id="impWizard" style="display:none;">
+      <p class="hint" id="impFileName"></p>
+      <p class="hint" data-i18n="impMap">Match each file column to a field:</p>
+      <div class="table-wrap"><table id="impMapTable"><tbody></tbody></table></div>
+      <p class="hint" data-i18n="impPreview">Preview (first 5 rows):</p>
+      <div class="table-wrap"><table id="impPreviewTable"><thead></thead><tbody></tbody></table></div>
+      <button class="btn btn-primary" id="impRunBtn" type="button" data-i18n="impRun">Import rows</button>
+    </div>
+    <div class="msg" id="impMsg"></div>
+  </section>
+
+  </div><!-- /appBody -->
+
+  <footer data-i18n="footer">Open source - MIT License. Works offline. Your data is protected by login.</footer>
+</div>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
