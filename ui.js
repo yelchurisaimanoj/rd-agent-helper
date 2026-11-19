@@ -1,10 +1,10 @@
 (function(){
 'use strict';
-var titles={overview:['Your day, at a glance.','A clear picture of your accounts and monthly collections.'],search:['Find references. Prepare faster.','Enter aliases, check the total, then share only the reference numbers.'],records:['Every account. One clear list.','Find a client, update details or download a private backup.'],add:['Keep your records up to date.','Add one account or bring an existing list into your workspace.'],schedule:['Prepare your schedule','Find clients. Add to your list. Share the references.'],admin:['Your admin workspace.','Review agent accounts and their records. Handle access changes in the secure database dashboard.']};
+var titles={overview:['Your day, at a glance.','A clear picture of your accounts and monthly collections.'],search:['Find references. Prepare faster.','Enter aliases, check the total, then share only the reference numbers.'],records:['Every account. One clear list.','Find a client, update details or download a private backup.'],add:['Keep your records up to date.','Add one account or bring an existing list into your workspace.'],schedule:['Prepare your schedule','Add clients in one step. Then share your schedule.'],admin:['Your admin workspace.','Review agent accounts and their records. Handle access changes in the secure database dashboard.']};
 var current='schedule',nav=document.querySelector('.workspace-nav');
 window.rdShowView=function(view){
  if(!titles[view]||(view==='admin'&&document.getElementById('adminCard').style.display==='none'))view='schedule';
- current=view;
+ current=view;document.body.dataset.currentView=view;
  document.getElementById("approxMaturing").style.display=view==='schedule'?'none':'';
  document.querySelectorAll('[data-view]').forEach(function(el){el.hidden=el.id==='legacySchedule'||el.dataset.view!==view;});
  nav.querySelectorAll('button').forEach(function(el){el.classList.toggle('selected',el.dataset.viewTarget===view);if(el.dataset.viewTarget===view)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');});
