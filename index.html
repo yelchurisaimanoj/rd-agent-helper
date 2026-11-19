@@ -4,17 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RD Agent Helper</title>
-<link rel="stylesheet" href="styles-v7.css">
+<link rel="stylesheet" href="styles-v7.css?v=12">
 </head>
 <body>
 <div class="container">
   <header class="brand-header"><div class="brand-mark" aria-hidden="true">RD<span>•</span></div><div class="brand-copy">
     <h1 data-i18n="appTitle">RD Agent Helper</h1>
     <p data-i18n="tagline">For India Post RD agents - track client RD accounts, prepare schedules, share on WhatsApp.</p>
-    </div><div class="lang-bar">
-      <button type="button" data-lang="en" class="active">English</button>
-      <button type="button" data-lang="hi">हिंदी</button>
-      <button type="button" data-lang="te">తెలుగు</button>
     </div>
   </header>
 
@@ -117,19 +113,19 @@
 
   <section class="card" data-view="schedule" id="scheduleBuilder">
     <div class="section-kicker">YOUR NEXT SCHEDULE</div><h2>This month's schedule</h2>
-    <p class="hint">Search for clients and add them to your list. Adding does not mark them as paid.</p>
+    <p class="hint">Enter client numbers and tap Add to schedule. This does not mark payment.</p>
     <input type="month" id="builderMonth" hidden>
-    <label for="builderQuery">Search by alias, name or reference</label><div class="search-bar"><input id="builderQuery" placeholder="e.g. 1,3,5 or a client name"><button type="button" class="btn btn-primary" id="builderFind">Find clients</button></div>
-    <p id="builderHint" class="hint">Start with a search. Only matching clients appear here.</p>
+    <label for="builderQuery">Client numbers, name or reference</label><div class="search-bar"><input id="builderQuery" placeholder="Example: 1, 3, 5"><button type="button" class="btn btn-primary" id="builderFind">Add to schedule</button></div>
+    <p id="builderHint" class="hint">Add several client numbers at once, separated by commas.</p>
     <div id="builderMatches"></div>
   </section>
   <section class="card" data-view="schedule" id="builderSummary">
     <div class="section-kicker">YOUR SCHEDULE</div><h2><span id="builderCount">0</span> clients selected</h2>
     <div id="builderSelected"><p class="empty">No clients added yet.</p></div>
     <div class="total-row"><span>Schedule total</span><span id="builderTotal">Rs. 0</span></div>
-    <a class="btn btn-wa" id="builderShare" hidden target="_blank" rel="noopener">Share reference numbers on WhatsApp</a>
+    <a class="btn btn-wa" id="builderShare" hidden target="_blank" rel="noopener">Share on WhatsApp</a>
     <p class="hint">Only the selected reference numbers are shared. Choose the recipient and send in WhatsApp. This draft clears when you reload or sign out.</p>
-    <button type="button" class="btn btn-small" id="builderClear">Clear selection</button>
+    <button type="button" class="btn btn-small" id="builderClear">Clear schedule</button>
   </section>
   <!-- Alias search -->
   <section class="card" data-view="search">
@@ -206,7 +202,7 @@
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="app-v7.js?v=10"></script>
-<script src="ui.js?v=11"></script>
+<script src="app-v7.js?v=12"></script>
+<script src="ui.js?v=12"></script>
 </body>
 </html>
