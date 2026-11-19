@@ -139,6 +139,7 @@ var sb = null, session = null, cache = [], syncDirty = false;
 function normalize(r) {
   return { id: r.id || null, alias: parseInt(r.alias, 10) || 0, name: String(r.name || ""),
     phone: String(r.phone || ""), ref: String(r.ref || ""), amount: parseFloat(r.amount) || 0,
+    approx_open_month: /^\d{4}-\d{2}$/.test(r.approx_open_month || "") ? r.approx_open_month : "", approx_open_source: String(r.approx_open_source || ""),
     date: r.date ? String(r.date).slice(0, 10) : "", notes: String(r.notes || ""),
     paid: (r.paid && typeof r.paid === "object") ? r.paid : {} };
 }
@@ -429,8 +430,25 @@ $("searchBtn").addEventListener("click", function () {
   }
 });
 
+// Approximate term notices never change schedule eligibility or paid flags.
+function approxTermMonth(r, now) {
+  var m = /^(\d{4})-(\d{2})$/.exec(r.approx_open_month || "");
+  if (!m || Number(m[2]) < 1 || Number(m[2]) > 12) return null;
+  return (now.getFullYear() - Number(m[1])) * 12 + now.getMonth() + 1 - Number(m[2]) + 1;
+}
+function renderApproxNotice() {
+  var box = $("approxMaturing"); if (!box) return;
+  box.textContent = "";
+  var now = new Date(), rows = loadRecords().filter(function(r) { var n = approxTermMonth(r, now); return n === 59 || n === 60; }).sort(function(a,b){return a.alias-b.alias;});
+  box.hidden = !rows.length;
+  if (!rows.length) return;
+  var title = document.createElement("strong"); title.textContent = "Maturing soon (approximate)"; box.appendChild(title);
+  var note = document.createElement("p"); note.className = "hint"; note.textContent = "Estimated from portal data captured 19 Nov 2026. Opening month counts as month 1. Months 59 and 60 only; not a payment or maturity confirmation."; box.appendChild(note);
+  rows.forEach(function(r) { var p = document.createElement("p"); p.textContent = "#" + r.alias + " · " + r.name + " · Month " + approxTermMonth(r,now) + " of 60 · Approx. opening " + r.approx_open_month; box.appendChild(p); });
+}
 // --- All records ---
 function renderAll() {
+  renderApproxNotice();
   var q = ($("filterInput").value || "").trim().toLowerCase();
   var records = loadRecords().sort(function (a, b) { return a.alias - b.alias; });
   var shown = q ? records.filter(function (r) {
@@ -466,7 +484,7 @@ function renderAll() {
   });
 }
 $("filterInput").addEventListener("input", renderAll);
-function refreshViews() { renderAll(); renderDash(); if (lastSched) renderSched(lastSched); }
+function refreshViews() { renderApproxNotice(); renderAll(); renderDash(); if (lastSched) renderSched(lastSched); }
 
 // --- Export ---
 function download(filename, text, mime) {
