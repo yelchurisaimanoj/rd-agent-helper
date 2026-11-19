@@ -81,7 +81,7 @@ Object.assign(I18N.en, {
   adminTitle:"Admin: all agents", adminEmail:"Agent", adminRecs:"Records", adminValue:"Monthly total", adminView:"View", adminHide:"Hide", adminNone:"No agents yet."
 });
 
-var lang = localStorage.getItem(LANG_KEY) || "en";
+var lang = "en";
 if (!I18N[lang]) lang = "en";
 function t(k) { return (I18N[lang] && I18N[lang][k]) || I18N.en[k] || k; }
 function $(id) { return document.getElementById(id); }
@@ -149,6 +149,7 @@ function nextAlias() {
 }
 var cloudReady = false, saving = false;
 function setSyncNote(message) {
+  $("syncNote").classList.toggle("routine-connected", !!message && message.indexOf("Connected.") === 0);
   $("syncNote").style.display = message ? "block" : "none";
   $("syncNote").textContent = message || "";
 }
@@ -679,10 +680,29 @@ $("impRunBtn").addEventListener("click", async function () {
 
 // Search-first schedule preview. Selection is temporary and never sets a paid flag.
 var builderSelection = new Set();
-function builderCard(r,selected){var el=document.createElement("div");el.className="builder-row";var info=document.createElement("div");var title=document.createElement("strong");title.textContent="#"+r.alias+" · "+r.name;var sub=document.createElement("small");sub.textContent=r.ref+" · Rs. "+fmtAmount(r.amount);info.append(title,sub);var b=document.createElement("button");b.type="button";b.className="btn btn-small";b.textContent=selected?"Remove":"Add to schedule";b.addEventListener("click",function(){if(selected)builderSelection.delete(r.alias);else builderSelection.add(r.alias);renderBuilder();findBuilder();});el.append(info,b);return el;}
+function builderCard(r,selected){var el=document.createElement("div");el.className="builder-row";var info=document.createElement("div");var title=document.createElement("strong");title.textContent="#"+r.alias+" · "+r.name;var sub=document.createElement("small");sub.textContent=r.ref+" · Rs. "+fmtAmount(r.amount);info.append(title,sub);var b=document.createElement("button");b.type="button";b.className="btn btn-small";b.textContent=selected?"Remove":"Add to schedule";b.addEventListener("click",function(){if(selected)builderSelection.delete(r.alias);else builderSelection.add(r.alias);renderBuilder();if(!selected){el.remove();$("builderHint").textContent="Added client #"+r.alias+". Enter the next client above.";}else{$("builderHint").textContent="Removed client #"+r.alias+" from this schedule.";}});el.append(info,b);return el;}
 function renderBuilder(){var selected=loadRecords().filter(function(r){return builderSelection.has(r.alias);}).sort(function(a,b){return a.alias-b.alias;});var box=$("builderSelected");box.textContent="";selected.forEach(function(r){box.appendChild(builderCard(r,true));});if(!selected.length){var p=document.createElement("p");p.className="empty";p.textContent="No clients added yet.";box.appendChild(p);}$("builderCount").textContent=selected.length;$("builderTotal").textContent="Rs. "+fmtAmount(selected.reduce(function(s,r){return s+Number(r.amount||0);},0));$("builderShare").hidden=!selected.length;$("builderShare").href="https://wa.me/?text="+encodeURIComponent(selected.map(function(r){return r.ref;}).join(",\n"));}
-function findBuilder(){var q=$("builderQuery").value.trim().toLowerCase(),box=$("builderMatches");box.textContent="";if(!q){$("builderHint").textContent="Start with a search. Your client list stays out of the way.";return;}var aliases=/^\d+(\s*,\s*\d+)*$/.test(q)?q.split(",").map(Number):null;var results=loadRecords().filter(function(r){return isActiveIn(r,$("builderMonth").value)&&!builderSelection.has(r.alias)&&(aliases?aliases.indexOf(r.alias)!==-1||(r.ref||"").toLowerCase()===q:(r.name||"").toLowerCase().includes(q)||(r.ref||"").toLowerCase().includes(q));});$("builderHint").textContent=results.length?results.length+(results.length===1?" match. ":" matches. ")+"Add only the clients for this schedule.":"No unselected matching clients for this month.";results.slice(0,20).forEach(function(r){box.appendChild(builderCard(r,false));});if(results.length>20)$("builderHint").textContent+=" Showing 20. Refine your search.";}
-$("builderMonth").value=monthKey(new Date());$("builderMonth").addEventListener("change",function(){builderSelection.clear();renderBuilder();findBuilder();});$("builderFind").addEventListener("click",findBuilder);$("builderClear").addEventListener("click",function(){builderSelection.clear();renderBuilder();findBuilder();});
+function findBuilder(){
+ var q=$("builderQuery").value.trim(),box=$("builderMatches"),hint=$("builderHint");box.textContent="";
+ if(!q){hint.textContent="Enter client numbers, a reference or a name first.";return;}
+ var active=loadRecords().filter(function(r){return isActiveIn(r,$("builderMonth").value);});
+ var tokens=q.split(/[,;\n]+/).map(function(v){return v.trim();}).filter(Boolean),missing=[],ambiguous=[],added=0,existing=0;
+ tokens.forEach(function(token){
+  var lower=token.toLowerCase();var exact=active.filter(function(r){return String(r.alias)===token||(r.ref||"").toLowerCase()===lower;});
+  var matches=exact.length?exact:active.filter(function(r){return (r.name||"").toLowerCase()===lower;});
+  if(!matches.length&&!/^\d+$/.test(token))matches=active.filter(function(r){return (r.name||"").toLowerCase().includes(lower)||(r.ref||"").toLowerCase().includes(lower);});
+  if(!matches.length){missing.push(token);return;}
+  if(matches.length>1){ambiguous.push({token:token,rows:matches});return;}
+  var r=matches[0];if(builderSelection.has(r.alias))existing++;else{builderSelection.add(r.alias);added++;}
+ });
+ renderBuilder();
+ ambiguous.forEach(function(group){var p=document.createElement("p");p.className="choice-title";p.textContent="Choose the right client for "+group.token+":";box.appendChild(p);group.rows.slice(0,20).forEach(function(r){if(!builderSelection.has(r.alias))box.appendChild(builderCard(r,false));});if(group.rows.length>20){var more=document.createElement("p");more.textContent="More than 20 matches. Enter a longer name or client number.";box.appendChild(more);}});
+ var messages=[];if(added)messages.push("Added "+added+(added===1?" client.":" clients."));if(existing)messages.push(existing+" already in your schedule.");if(missing.length)messages.push("Not found: "+missing.join(", ")+". Check the numbers and try again.");if(ambiguous.length)messages.push("More than one match. Choose below.");hint.textContent=messages.join(" ");hint.className="hint "+(missing.length?"builder-warning":added?"builder-success":"");
+ if(!missing.length&&!ambiguous.length)$("builderQuery").value="";
+ $("builderQuery").focus();
+}
+$("builderHint").setAttribute("role","status");$("builderHint").setAttribute("aria-live","polite");
+$("builderMonth").value=monthKey(new Date());$("builderMonth").addEventListener("change",function(){builderSelection.clear();renderBuilder();});$("builderFind").addEventListener("click",findBuilder);$("builderQuery").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();findBuilder();}});$("builderClear").addEventListener("click",function(){if(builderSelection.size&&!confirm("Remove all clients from this schedule?"))return;builderSelection.clear();renderBuilder();$("builderMatches").textContent="";$("builderHint").textContent="Schedule cleared. Your saved records have not changed.";});
 // --- Init ---
 async function init() {
   applyLang();
