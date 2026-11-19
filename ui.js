@@ -5,6 +5,7 @@ var current='schedule',nav=document.querySelector('.workspace-nav');
 window.rdShowView=function(view){
  if(!titles[view]||(view==='admin'&&document.getElementById('adminCard').style.display==='none'))view='schedule';
  current=view;
+ document.getElementById("approxMaturing").style.display=view==='schedule'?'none':'';
  document.querySelectorAll('[data-view]').forEach(function(el){el.hidden=el.id==='legacySchedule'||el.dataset.view!==view;});
  nav.querySelectorAll('button').forEach(function(el){el.classList.toggle('selected',el.dataset.viewTarget===view);if(el.dataset.viewTarget===view)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');});
  document.getElementById('viewTitle').textContent=titles[view][0];document.getElementById('viewHint').textContent=titles[view][1];
