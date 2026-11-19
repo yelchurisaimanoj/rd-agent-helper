@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RD Agent Helper</title>
-<link rel="stylesheet" href="styles.css?v=6">
+<link rel="stylesheet" href="styles-v7.css">
 </head>
 <body>
 <div class="container">
-  <header>
+  <header class="brand-header"><div class="brand-mark" aria-hidden="true">RD<span>•</span></div><div class="brand-copy">
     <h1 data-i18n="appTitle">RD Agent Helper</h1>
     <p data-i18n="tagline">For India Post RD agents - track client RD accounts, prepare schedules, share on WhatsApp.</p>
-    <div class="lang-bar">
+    </div><div class="lang-bar">
       <button type="button" data-lang="en" class="active">English</button>
       <button type="button" data-lang="hi">हिंदी</button>
       <button type="button" data-lang="te">తెలుగు</button>
@@ -20,7 +20,7 @@
 
   <!-- Login (only shown when cloud backend is configured) -->
   <section class="card" id="authCard" style="display:none;">
-    <h2 data-i18n="loginTitle">Agent login</h2>
+    <div class="login-intro"><span class="eyebrow">YOUR DAILY RD WORKSPACE</span><h2 data-i18n="loginTitle">Agent login</h2><p>Less searching. More time for your clients.</p></div>
     <div id="authForm">
       <label for="emailInput" data-i18n="fEmail">Email</label>
       <input id="emailInput" type="email" autocomplete="email">
@@ -37,9 +37,21 @@
   </section>
 
   <div id="appBody" style="display:none;">
+  <nav class="workspace-nav" aria-label="Workspace">
+    <span class="nav-caption">WORKSPACE</span>
+    <button data-view-target="schedule"><span aria-hidden="true">▦</span> Schedule</button>
+    <button data-view-target="records"><span aria-hidden="true">▤</span> All records</button>
+    <button data-view-target="add"><span aria-hidden="true">＋</span> Add / import</button>
+    <button data-view-target="admin" id="adminNav" hidden><span aria-hidden="true">⚙</span> Admin</button>
+    <div class="nav-note"><span class="status-dot"></span> Private account workspace<br><small>Cloud records need internet</small></div>
+  </nav>
+  <div class="workspace-content">
+  <div class="workspace-heading"><div><span class="eyebrow">RD AGENT HELPER</span><h2 id="viewTitle">Your day, at a glance.</h2><p id="viewHint">A clear picture of your accounts and monthly collections.</p></div><span class="workspace-chip">Account workspace</span></div>
 
+
+    <p class="hint" id="syncNote" style="display:none;"></p>
   <!-- Admin (visible only to admin accounts) -->
-  <section class="card" id="adminCard" style="display:none;">
+  <section class="card" data-view="admin" id="adminCard" style="display:none;">
     <h2 data-i18n="adminTitle">Admin: all agents</h2>
     <div class="table-wrap">
       <table id="adminTable">
@@ -50,15 +62,15 @@
   </section>
 
   <!-- Dashboard -->
-  <section class="card" id="dashCard">
+  <section class="card" data-view="overview" id="dashCard">
     <h2 data-i18n="dashboard">Dashboard</h2>
     <div class="table-wrap"><table id="dashTable"><tbody></tbody></table></div>
     <div id="maturityNotice"></div>
-    <p class="hint" id="syncNote" style="display:none;"></p>
+
   </section>
 
   <!-- Add / edit record -->
-  <section class="card" id="addCard">
+  <section class="card" data-view="add" id="addCard">
     <h2 id="addTitle" data-i18n="addTitle">Add RD account</h2>
     <form id="addForm" autocomplete="off">
       <input type="hidden" id="editAlias" value="">
@@ -81,7 +93,7 @@
   </section>
 
   <!-- Monthly schedule -->
-  <section class="card">
+  <section class="card" data-view="schedule" id="legacySchedule" hidden>
     <h2 data-i18n="schedTitle">Monthly schedule</h2>
     <label for="schedMonth" data-i18n="schedMonth">Month</label>
     <input id="schedMonth" type="month">
@@ -102,9 +114,25 @@
     </div>
   </section>
 
+  <section class="card" data-view="schedule" id="scheduleBuilder">
+    <div class="section-kicker">YOUR NEXT SCHEDULE</div><h2>This month's schedule</h2>
+    <p class="hint">Search for clients and add them to your list. Adding does not mark them as paid.</p>
+    <input type="month" id="builderMonth" hidden>
+    <label for="builderQuery">Search by alias, name or reference</label><div class="search-bar"><input id="builderQuery" placeholder="e.g. 1,3,5 or a client name"><button type="button" class="btn btn-primary" id="builderFind">Find clients</button></div>
+    <p id="builderHint" class="hint">Start with a search. Only matching clients appear here.</p>
+    <div id="builderMatches"></div>
+  </section>
+  <section class="card" data-view="schedule" id="builderSummary">
+    <div class="section-kicker">YOUR SCHEDULE</div><h2><span id="builderCount">0</span> clients selected</h2>
+    <div id="builderSelected"><p class="empty">No clients added yet.</p></div>
+    <div class="total-row"><span>Schedule total</span><span id="builderTotal">Rs. 0</span></div>
+    <a class="btn btn-wa" id="builderShare" hidden target="_blank" rel="noopener">Share reference numbers on WhatsApp</a>
+    <p class="hint">Only the selected reference numbers are shared. Choose the recipient and send in WhatsApp. This draft clears when you reload or sign out.</p>
+    <button type="button" class="btn btn-small" id="builderClear">Clear selection</button>
+  </section>
   <!-- Alias search -->
-  <section class="card">
-    <h2 data-i18n="searchTitle">Search by alias numbers</h2>
+  <section class="card" data-view="search">
+    <div class="section-kicker">BUILD YOUR NEXT SCHEDULE</div><h2 data-i18n="searchTitle">Search by alias numbers</h2>
     <label for="searchInput" data-i18n="searchLabel">Alias numbers (comma separated)</label>
     <input id="searchInput" type="text" placeholder="1,2,5">
     <p class="hint" data-i18n="searchHint">Enter the short alias numbers shown next to each record. One or many, separated by commas.</p>
@@ -128,7 +156,7 @@
   </section>
 
   <!-- All records -->
-  <section class="card">
+  <section class="card" data-view="records">
     <h2><span data-i18n="allTitle">All records</span> <span class="badge" id="countBadge">0</span></h2>
     <input id="filterInput" type="search" data-i18n-ph="filterPh" placeholder="Search by name or reference">
     <div class="table-wrap">
@@ -150,8 +178,8 @@
   </section>
 
   <!-- Import data file -->
-  <section class="card">
-    <h2 data-i18n="impTitle">Import data file</h2>
+  <section class="card" data-view="add">
+    <div class="section-kicker">BRING YOUR LIST WITH YOU</div><h2 data-i18n="impTitle">Import data file</h2>
     <p class="hint" data-i18n="impHint">Load your existing client list from a CSV or Excel file (including a report downloaded from the DOP agent portal). You can match columns before importing.</p>
     <div class="toolbar">
       <button class="btn btn-small" id="pickFileBtn" type="button" data-i18n="impPick">Choose CSV / Excel file</button>
@@ -169,6 +197,7 @@
     <div class="msg" id="impMsg"></div>
   </section>
 
+  </div><!-- /workspace-content -->
   </div><!-- /appBody -->
 
   <footer data-i18n="footer">Open source - MIT License. Cloud records need internet.</footer>
@@ -176,6 +205,7 @@
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="app.js?v=6"></script>
+<script src="app-v7.js"></script>
+<script src="ui.js?v=7"></script>
 </body>
 </html>
