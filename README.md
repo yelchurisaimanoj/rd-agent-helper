@@ -9,7 +9,9 @@ Open-source reference tracker for India Post RD agents. Independent tool, not af
 - Automatic aliases, comma-separated alias search, matching table and total.
 - WhatsApp share button prepares only the selected comma-separated reference numbers. The agent chooses the recipient and sends the message.
 - Name, reference, monthly amount, optional opening date, phone and notes.
-- Monthly collection status, dashboard, account editing and deletion.
+- Search-first schedule builder: add selected clients, see their total and share only their references. Adding a client never marks payment.
+- Schedule, search-first Records, Add/import and admin-only Admin navigation. Mobile results use labeled cards.
+- Schedule drafts are temporary: reload/sign-out clears them. Account editing and deletion remain available in Records.
 - JSON, CSV and Excel import with column mapping and preview. Existing Sno aliases can be preserved. IsNeedTOpay is ignored by default.
 - JSON/CSV exports. Keep backups private.
 - English, Hindi and Telugu labels; newer controls currently fall back to English.
@@ -21,7 +23,9 @@ The published repository contains code only, no client data. Cloud records requi
 
 The offline service worker caches only the application shell, never API data. Device-only mode is available when no backend is configured, but is not login-protected. Do not use device-only mode on shared devices.
 
-Payment status is agent-entered tracking, not confirmation from India Post. Maturity reminders are estimated from opening date and need checking against official account records. Missing opening dates prevent maturity estimates.
+The current simple schedule does not mark payments or confirm India Post deposits. Search is limited to accounts considered active this month when opening dates are available; missing opening dates leave accounts eligible. No payment reconciliation, arrears or rebate calculation is performed.
+
+The current page loads app-v7.js, styles-v7.css and ui.js. Older app.js/styles.css remain for compatibility with already-open older pages. Keep versioned assets and the service-worker cache list aligned during releases.
 
 ## Portal and chatbot
 
