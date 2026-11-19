@@ -1,5 +1,5 @@
-const CACHE='rd-shell-v8';
-const ASSETS=['./','./index.html','./styles-v7.css','./app-v7.js?v=8','./ui.js?v=7'];
+const CACHE='rd-shell-v9';
+const ASSETS=['./','./index.html','./styles-v7.css','./app-v7.js?v=9','./ui.js?v=7'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',e=>{
