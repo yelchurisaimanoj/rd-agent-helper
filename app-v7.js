@@ -435,12 +435,12 @@ function renderAll() {
   var records = loadRecords().sort(function (a, b) { return a.alias - b.alias; });
   var shown = q ? records.filter(function (r) {
     return String(r.alias) === q || (r.name || "").toLowerCase().indexOf(q) !== -1 || (r.ref || "").toLowerCase().indexOf(q) !== -1;
-  }) : [];
+  }) : records;
   var tb = $("allTable").querySelector("tbody");
   tb.innerHTML = "";
   $("countBadge").textContent = records.length;
   $("allEmpty").style.display = shown.length ? "none" : "block";
-  $("allEmpty").textContent = !q ? "Search by alias, name or reference to find a client. No records are shown until you search." : "No matching clients.";
+  $("allEmpty").textContent = !q ? "No records yet." : "No matching clients.";
   shown.forEach(function (r) {
     var tr = document.createElement("tr");
     var cells = [r.alias, r.name || "", r.ref || "", fmtAmount(r.amount), fmtDate(r.date)];
